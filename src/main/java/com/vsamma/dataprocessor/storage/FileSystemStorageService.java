@@ -9,6 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -26,7 +30,9 @@ import com.vsamma.dataprocessor.repository.PersonRepository;
 import com.vsamma.dataprocessor.service.PersonAssembler;
 
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,7 +61,14 @@ public class FileSystemStorageService implements StorageService {
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
             Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
+            long startTime = System.nanoTime();
+            System.out.println("Starttime: " + startTime);
             this.storeContentsToDb(file);
+            long endTime = System.nanoTime();
+            System.out.println("Endtime: " + endTime);
+            long estimatedTime = endTime - startTime;
+            System.out.println("Time diff: " + estimatedTime);
+            System.out.println("Time diff in seconds: " + (estimatedTime/1000000000.0));
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
         }
@@ -68,24 +81,38 @@ public class FileSystemStorageService implements StorageService {
 		
         try {
 
-            String fileName = file.getOriginalFilename();
-            System.out.println("Filename:"  + fileName);
-            System.out.println("rootLocation:"  + this.rootLocation);
-            
-            File f1 = new File(fileName);
-            File f2 = new File(this.rootLocation + fileName);
-            File f3 = new File(this.rootLocation + "/" + fileName);
-            
-            System.out.println("f1 exists: " + f1.exists());
-            System.out.println("f2 exists: " + f2.exists());
-            System.out.println("f3 exists: " + f3.exists());
-            
+            String filePath = this.rootLocation + "/" + file.getOriginalFilename();
 
-//            fis = new FileInputStream(new File(fileName));
+//            fis = new FileInputStream(new File(filePath));
 //            CSVReader reader = new CSVReader(new InputStreamReader(fis));
 //            String[] nextLine;
 //            reader.readNext();
+            
+//            LineIterator it = FileUtils.lineIterator(new File(filePath), "UTF-8");
+//            try {
+//                while (it.hasNext()) {
+//                    String line = it.nextLine();
+//                    CSVReader reader = new CSVReader()
+//                    // do something with line
+//                }
+//            } finally {
+//                LineIterator.closeQuietly(it);
+//            }
 //            
+            Reader in = new FileReader(filePath);
+            Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+            for (CSVRecord record : records) {
+//                String lastName = record.get("Last Name");
+//                String firstName = record.get("First Name");
+            	createPerson(
+    			Long.valueOf(record.get(0)),
+    			record.get(1),
+    			Integer.valueOf(record.get(2)),
+    			record.get(3),
+    			record.get(4)
+    			);
+            }
+            
 //            while ((nextLine = reader.readNext()) != null) {
 //
 ////                Country newCountry = new Country(nextLine[0],
@@ -100,11 +127,11 @@ public class FileSystemStorageService implements StorageService {
 //            			nextLine[4]
 //            			);
 //            }
-//
-//        } catch (FileNotFoundException ex) {
-//            Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (fis != null) {
@@ -182,5 +209,12 @@ public class FileSystemStorageService implements StorageService {
     	List<PersonDTO> personDTOs = modelMapper.map(persons, targetListType);
     	return personDTOs;
     }
-
+    
+    @Override
+    public List<PersonDTO> findByNameContaining(String query){
+    	List<Person> persons = personRepository.findByNameContaining(query);
+    	java.lang.reflect.Type targetListType = new TypeToken<List<PersonDTO>>() {}.getType();
+    	List<PersonDTO> personDTOs = modelMapper.map(persons, targetListType);
+    	return personDTOs;
+    }
 }

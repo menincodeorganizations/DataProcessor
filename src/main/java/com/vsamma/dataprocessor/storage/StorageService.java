@@ -28,5 +28,6 @@ public interface StorageService {
     void deleteAll();
     
 	public List<PersonDTO> findAllPersons();
-
+	
+	public List<PersonDTO> findByNameContaining(String query);
 }
