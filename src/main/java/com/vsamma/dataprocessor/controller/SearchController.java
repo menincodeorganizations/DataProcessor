@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+//import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -40,7 +43,9 @@ public class SearchController {
 	public ResponseEntity<?> getSearchResultsViaAjax(
 			@Valid @RequestBody SearchQuery query, Errors errors) {
 		
+		System.out.println("Search initiated. Query: '" + query.getQuery() + "'.");
 		AjaxResponseBody result = new AjaxResponseBody();
+		System.out.println("Result object created");
 		
         //If error, just return a 400 bad request, along with the error message
         if (errors.hasErrors()) {
@@ -62,7 +67,15 @@ public class SearchController {
 //        result.setResult(users);
         
         List<PersonDTO> srcResult = storageService.findByNameContaining(query.getQuery());
+        System.out.println("Search ended. People found: " + srcResult.size());
         result.setResults(srcResult);
+        
+//        Person person = Person.of(1, "Lala", 22, "Lolo", "BLUR");                          
+//                                   
+//        
+//        ExampleMatcher matcher = ExampleMatcher.matching()     
+//          .withIgnorePaths("lastname")                         
+//          .withIncludeNullValues().withStringMatcher(StringMatcher.CONTAINING)                            .
 
         return ResponseEntity.ok(result);
 	}

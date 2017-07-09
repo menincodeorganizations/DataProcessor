@@ -6,7 +6,6 @@ import lombok.*;
 
 @Entity
 @Data
-@Getter @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @AllArgsConstructor(staticName = "of")
 public class Person {
