@@ -14,6 +14,6 @@ import lombok.*;
 @Getter @Setter @ToString
 @NoArgsConstructor
 public class AjaxResponseBody {
-	
+	int resultCount;
 	List<PersonDTO> results;
 }

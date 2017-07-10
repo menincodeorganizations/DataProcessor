@@ -4,7 +4,7 @@ $(document).ready(function() {
         fontSize: '48px'
     }, "slow");
     
-     $("#upload-form").submit(function (event) {
+    $("#upload-form").submit(function (event) {
 
         //stop submit the form, we will post it manually.
         event.preventDefault();
@@ -20,12 +20,53 @@ $(document).ready(function() {
 		console.log("test3");
 		console.log(lll3);
 		form_data.append( "file", $("input[name=uploadField]")[0].files[0]);
-        fire_ajax_submit(form_data);
+        upload(form_data);
+
+    });
+    
+//    $(function() {
+    $("#searchField2").autocomplete({
+    	source: function(request, response) {
+    	    var search = {}
+    	    search["query"] = request.term;
+    		$.ajax({
+    			type: "POST",
+    			url: "/search",
+    			dataType: "json",
+    			contentType: "application/json",
+//    			data: {
+//    				query: request.term
+//    			},
+    			data: JSON.stringify(search),
+    			success: function(data) {
+    				console.log("autocomplete works!");
+    				console.log(data);
+    				response($.map(data.results, function(item) {
+    					return {
+    						label: item.name,
+    						value: item.id
+    					}
+    				}));
+    			}
+    		});
+    	},
+    	minLength: 1
+    });
+//    });
+    
+    
+    
+    $("#search-form").submit(function (event) {
+
+        //stop submit the form, we will post it manually.
+        event.preventDefault();
+
+        search();
 
     });
 });
 
-function fire_ajax_submit(form_data) {
+function upload(form_data) {
 
     //var search = {}
     //search["username"] = $("#username").val();
@@ -63,4 +104,43 @@ function fire_ajax_submit(form_data) {
 
         }
     });
+}
+
+function search() {
+
+    var search = {}
+    search["query"] = $("#searchField").val();
+
+    $("#btn-search").prop("disabled", true);
+
+    $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        url: "/search",
+        data: JSON.stringify(search),
+        dataType: 'json',
+        cache: false,
+        timeout: 600000,
+        success: function (data) {
+
+            var json = "<h4>Ajax Response</h4><pre>"
+                + JSON.stringify(data, null, 4) + "</pre>";
+            $('#feedback').html(json);
+
+            console.log("SUCCESS : ", data);
+            $("#btn-search").prop("disabled", false);
+
+        },
+        error: function (e) {
+
+            var json = "<h4>Ajax Response</h4><pre>"
+                + e.responseText + "</pre>";
+            $('#feedback').html(json);
+
+            console.log("ERROR : ", e);
+            $("#btn-search").prop("disabled", false);
+
+        }
+    });
+
 }

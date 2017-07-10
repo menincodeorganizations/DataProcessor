@@ -66,9 +66,12 @@ public class SearchController {
 //        }
 //        result.setResult(users);
         
-        List<PersonDTO> srcResult = storageService.findByNameContaining(query.getQuery());
+//        List<PersonDTO> srcResult = storageService.findByNameContaining(query.getQuery());
+//        findMostRelevantPeople
+        List<PersonDTO> srcResult = storageService.findMostRelevantPeople(query.getQuery()); 
         System.out.println("Search ended. People found: " + srcResult.size());
         result.setResults(srcResult);
+        result.setResultCount(srcResult.size());
         
 //        Person person = Person.of(1, "Lala", 22, "Lolo", "BLUR");                          
 //                                   

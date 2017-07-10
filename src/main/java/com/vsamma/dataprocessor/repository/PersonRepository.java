@@ -10,7 +10,7 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-//public interface PersonRepository extends JpaRepository<Person, Long>, QueryDslPredicateExecutor<Person>, CustomRepository{
-public interface PersonRepository extends JpaRepository<Person, Long>, QueryDslPredicateExecutor<Person>{
+public interface PersonRepository extends JpaRepository<Person, Long>, QueryDslPredicateExecutor<Person>, CustomRepository{
+//public interface PersonRepository extends JpaRepository<Person, Long>, QueryDslPredicateExecutor<Person>{
 	List<Person> findByNameContaining(String name);
 }

@@ -30,4 +30,6 @@ public interface StorageService {
 	public List<PersonDTO> findAllPersons();
 	
 	public List<PersonDTO> findByNameContaining(String query);
+	
+	public List<PersonDTO> findMostRelevantPeople(String name);
 }

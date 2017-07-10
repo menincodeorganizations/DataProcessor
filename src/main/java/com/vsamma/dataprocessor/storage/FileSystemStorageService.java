@@ -217,4 +217,12 @@ public class FileSystemStorageService implements StorageService {
     	List<PersonDTO> personDTOs = modelMapper.map(persons, targetListType);
     	return personDTOs;
     }
+    
+    @Override
+    public List<PersonDTO> findMostRelevantPeople(String name){
+    	List<Person> persons = personRepository.findMostRelevantPeople(name);
+    	java.lang.reflect.Type targetListType = new TypeToken<List<PersonDTO>>() {}.getType();
+    	List<PersonDTO> personDTOs = modelMapper.map(persons, targetListType);
+    	return personDTOs;
+    }
 }
