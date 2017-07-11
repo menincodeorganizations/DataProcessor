@@ -26,15 +26,6 @@ import com.vsamma.dataprocessor.storage.StorageService;
 
 @Controller
 public class SearchController {
-	
-	//Some service is needed
-//    UserService userService;
-//
-//    @Autowired
-//    public void setUserService(UserService userService) {
-//        this.userService = userService;
-//    }
-	
 	@Autowired
 	StorageService storageService;
 
@@ -43,13 +34,10 @@ public class SearchController {
 	public ResponseEntity<?> getSearchResultsViaAjax(
 			@Valid @RequestBody SearchQuery query, Errors errors) {
 		
-		System.out.println("Search initiated. Query: '" + query.getQuery() + "'.");
 		AjaxResponseBody result = new AjaxResponseBody();
-		System.out.println("Result object created");
 		
         //If error, just return a 400 bad request, along with the error message
         if (errors.hasErrors()) {
-
             String err = (errors.getAllErrors()
                         .stream().map(x -> x.getDefaultMessage())
                         .collect(Collectors.joining(",")));
@@ -57,28 +45,9 @@ public class SearchController {
             return ResponseEntity.badRequest().body(err);
         }
         
-//        List<Person> srcResult = personRepository.findByNameContaining(query.getQuery());
-//        List<PersonDTO> users = userService.findByUserNameOrEmail(search.getUsername());
-//        if (users.isEmpty()) {
-//            result.setMsg("no user found!");
-//        } else {
-//            result.setMsg("success");
-//        }
-//        result.setResult(users);
-        
-//        List<PersonDTO> srcResult = storageService.findByNameContaining(query.getQuery());
-//        findMostRelevantPeople
+        //Find up to 20 names by using "contains"
         List<PersonDTO> srcResult = storageService.findMostRelevantPeople(query.getQuery()); 
-        System.out.println("Search ended. People found: " + srcResult.size());
         result.setResults(srcResult);
-        result.setResultCount(srcResult.size());
-        
-//        Person person = Person.of(1, "Lala", 22, "Lolo", "BLUR");                          
-//                                   
-//        
-//        ExampleMatcher matcher = ExampleMatcher.matching()     
-//          .withIgnorePaths("lastname")                         
-//          .withIncludeNullValues().withStringMatcher(StringMatcher.CONTAINING)                            .
 
         return ResponseEntity.ok(result);
 	}

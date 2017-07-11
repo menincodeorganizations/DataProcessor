@@ -4,6 +4,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.vsamma.dataprocessor.dto.PersonDTO;
+import com.vsamma.dataprocessor.model.Person;
 
 import java.nio.file.Path;
 import java.util.List;

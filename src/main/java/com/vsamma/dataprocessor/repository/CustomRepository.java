@@ -6,4 +6,5 @@ import com.vsamma.dataprocessor.model.Person;
 
 public interface CustomRepository {
 	List<Person> findMostRelevantPeople(String name);
+	public void bulkPersist(List<Person> entities);
 }

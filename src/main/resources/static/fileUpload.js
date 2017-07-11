@@ -1,16 +1,7 @@
 $(document).ready(function() {
 	var latestPeople = {}
 	var selectedPerson = {}
-	$("#personData").hide();
-	$("#personData").show();
-	$("#personData").hide();
-	//Hide person's data table at first when no results are selected.
-	
-	
-//    $('p').animate({
-//        fontSize: '48px'
-//    }, "slow");
-    
+
     $("#upload-form").submit(function (event) {
         //stop submit the form, we will post it manually.
         event.preventDefault();
@@ -49,7 +40,6 @@ $(document).ready(function() {
                 	selectedPerson = latestPeople[i] 
                 }
             }
-    		//$("#tableHeader").after("<tbody><tr><td>" + selectedPerson.id + "</td><td>" + selectedPerson.name + "</td><td>" + selectedPerson.age + "</td><td>" + selectedPerson.address + "</td><td>" + selectedPerson.team + "</td></tr></tbody>");
     		$("#personData tbody").append("<tr><td>" + selectedPerson.id + "</td><td>" + selectedPerson.name + "</td><td>" + selectedPerson.age + "</td><td>" + selectedPerson.address + "</td><td>" + selectedPerson.team + "</td></tr>");
     		$("#personData").show();
     	},
@@ -77,7 +67,7 @@ function upload(form_data) {
         processData: false,
         timeout: 600000,
         success: function (data) {
-            var json = "<h4>Response message</h4><pre>"
+            var json = "<h4>Response message</h4><hr/><pre>"
                 + JSON.stringify(data, null, 4) + "</pre>";
             $('#feedback').html(json.replace(/\"/g, ""));
 
@@ -85,7 +75,7 @@ function upload(form_data) {
             $("#uploadField").prop("disabled", false);
         },
         error: function (e) {
-            var json = "<h4>Response message</h4><pre>"
+            var json = "<h4>Response message</h4><hr/><pre>"
                 + e.responseText + "</pre>";
             $('#feedback').html(json.replace(/\"/g, ""));
 
@@ -113,7 +103,7 @@ function search() {
         timeout: 600000,
         success: function (data) {
 
-            var json = "<h4>Response message</h4><pre>"
+            var json = "<h4>Response message</h4><hr/><pre>"
                 + JSON.stringify(data, null, 4) + "</pre>";
             $('#feedback').html(json.replace(/\"/g, ""));
 
@@ -123,7 +113,7 @@ function search() {
         },
         error: function (e) {
 
-            var json = "<h4>Response message</h4><pre>"
+            var json = "<h4>Response message</h4><hr/><pre>"
                 + e.responseText + "</pre>";
             $('#feedback').html(json.replace(/\"/g, ""));
 

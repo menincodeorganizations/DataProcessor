@@ -1,6 +1,5 @@
 package com.vsamma.dataprocessor.storage;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,8 +10,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -22,18 +19,15 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.reflect.TypeToken;
-//import liquibase.util.csv.CSVReader;
-import com.opencsv.CSVReader;
 import com.vsamma.dataprocessor.dto.PersonDTO;
 import com.vsamma.dataprocessor.model.Person;
 import com.vsamma.dataprocessor.repository.PersonRepository;
-import com.vsamma.dataprocessor.service.PersonAssembler;
 
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.logging.Logger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -61,14 +55,9 @@ public class FileSystemStorageService implements StorageService {
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
             Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
-            long startTime = System.nanoTime();
-            System.out.println("Starttime: " + startTime);
+            
+            //Insert file data to DB
             this.storeContentsToDb(file);
-            long endTime = System.nanoTime();
-            System.out.println("Endtime: " + endTime);
-            long estimatedTime = endTime - startTime;
-            System.out.println("Time diff: " + estimatedTime);
-            System.out.println("Time diff in seconds: " + (estimatedTime/1000000000.0));
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
         }
@@ -80,54 +69,21 @@ public class FileSystemStorageService implements StorageService {
 		FileInputStream fis = null;
 		
         try {
-
+        	//Get imported file path
             String filePath = this.rootLocation + "/" + file.getOriginalFilename();
-
-//            fis = new FileInputStream(new File(filePath));
-//            CSVReader reader = new CSVReader(new InputStreamReader(fis));
-//            String[] nextLine;
-//            reader.readNext();
-            
-//            LineIterator it = FileUtils.lineIterator(new File(filePath), "UTF-8");
-//            try {
-//                while (it.hasNext()) {
-//                    String line = it.nextLine();
-//                    CSVReader reader = new CSVReader()
-//                    // do something with line
-//                }
-//            } finally {
-//                LineIterator.closeQuietly(it);
-//            }
-//            
+            //Create a new FileReader
             Reader in = new FileReader(filePath);
+            //Parse file lines to CSV records
             Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+            //Create an empty list for entities
+            List<Person> personList = new ArrayList<>();
+
             for (CSVRecord record : records) {
-//                String lastName = record.get("Last Name");
-//                String firstName = record.get("First Name");
-            	createPerson(
-    			Long.valueOf(record.get(0)),
-    			record.get(1),
-    			Integer.valueOf(record.get(2)),
-    			record.get(3),
-    			record.get(4)
-    			);
+            	personList.add(Person.of(Long.valueOf(record.get(0)), record.get(1), Integer.valueOf(record.get(2)), record.get(3), record.get(4)));
             }
             
-//            while ((nextLine = reader.readNext()) != null) {
-//
-////                Country newCountry = new Country(nextLine[0],
-////                        Integer.valueOf(nextLine[1]));
-////                countries.add(newCountry);
-//            	
-//            	createPerson(
-//            			Long.valueOf(nextLine[0]),
-//            			nextLine[1],
-//            			Integer.valueOf(nextLine[2]),
-//            			nextLine[3],
-//            			nextLine[4]
-//            			);
-//            }
-
+            //Bulk insert persons' data to DB
+            personRepository.bulkPersist(personList);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -148,7 +104,6 @@ public class FileSystemStorageService implements StorageService {
 	public PersonDTO createPerson(Long id, String name, Integer age, String address, String team){
 		Person p = Person.of(id, name, age, address, team);
 		personRepository.saveAndFlush(p);
-//		return personAssembler.toResource(p);
 		PersonDTO pDTO = modelMapper.map(p, PersonDTO.class);
 		System.out.println("Person added:" + pDTO.getName());
 		return pDTO;
