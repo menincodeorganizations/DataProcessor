@@ -31,8 +31,6 @@ public class FileUploadController {
 	@GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
 		
-		model.addAttribute("name", "Lalala");
-
 		//Seda pole vaja, kuna esialgsel laadimisel ei ole midagi näha 
 		//ja ma samas ei taha ka reloadi teha, ehk juba lehe laadimisel seda fn-i uuesti välja kutsuda. 
 //        model.addAttribute("files", storageService

@@ -21,65 +21,72 @@
 
 
 <div class="container" style="min-height: 500px">
-
-	<p th:text="'Hello, ' + ${name} + '!'" />
-
-	<div th:if="${message}">
-		<h2 th:text="${message}"/>
-	</div>
-
-	<div>
-		<form method="POST" enctype="multipart/form-data" action="/import">
-			<table>
-				<tr><td>File to upload:</td><td><input type="file" name="uploadField2" id="uploadField2" /></td></tr>
-				<tr><td></td><td><input type="submit" value="Upload" id="uploadButton2" /></td></tr>
-			</table>
-		</form>
-	</div>
-	
 	<div class="starter-template">
-        <h1>Spring Boot AJAX Example</h1>
+        <h1>CSV data import processor application</h1>
 
-        <div id="feedback"></div>
-
-        <form class="form-horizontal" id="upload-form">
-            <div class="form-group form-group-lg">
-                <label class="col-sm-2 control-label">File for upload</label>
-                <div class="col-sm-10">
-                    <input type="file" name="uploadField" class="form-control" id="uploadField"/>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" id="uploadButton"
-                            class="btn btn-primary btn-lg">Upload
-                    </button>
-                </div>
-            </div>
-        </form>
-        
-        <form class="form-horizontal" id="search-form">
-            <div class="form-group form-group-lg">
-                <label class="col-sm-2 control-label">Search for Person's name:</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="searchField"/>
-                    <input id="searchField2"/>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" id="bth-search"
-                            class="btn btn-primary btn-lg">Search
-                    </button>
-                </div>
-            </div>
-        </form>
-
-    </div>
+		<div class="content" style="padding-top: 50px;">
+			<div class="row">
+				<div class="col-md-6" style="border-color: #ddd; border-width: 1px; border-radius: 4px 4px 0 0;">
+					<h4>Import form</h4>
+					
+					<hr>
+					
+			        <form class="form-horizontal" id="upload-form">
+			            <div class="form-group form-group-sm">
+			                <label class="col-sm-3 control-label">File for upload</label>
+			                <div class="col-sm-6">
+			                    <input type="file" name="uploadField" class="form-control" id="uploadField"/>
+			                </div>
+			            </div>
+			
+			            <div class="form-group">
+			                <div class="col-sm-offset-2 col-sm-7">
+			                    <button type="submit" id="uploadButton"
+			                            class="btn btn-primary btn-sm pull-right">Upload
+			                    </button>
+			                </div>
+			            </div>
+			        </form>
+			        
+			        <form class="form-horizontal" id="search-form">
+			            <div class="form-group form-group-sm">
+			                <label class="col-sm-3 control-label">Search by name</label>
+			                <div class="col-sm-6">
+			                    <input type="text" class="form-control" id="searchField"/>
+			                </div>
+			            </div>
+			
+			            <!-- <div class="form-group">
+			                <div class="col-sm-offset-2 col-sm-10">
+			                    <button type="submit" id="bth-search"
+			                            class="btn btn-primary btn-lg">Search
+			                    </button>
+			                </div>
+			            </div> -->
+			        </form>
+				</div>
+				<div class="col-md-6">
+					<div id="feedback"></div>
+				</div>
+			</div>
+	    </div>
 	
-	
+		<div style="padding-top: 50px;">
+			<table id="personData" class="table table-striped" style="display:none;" >
+				<thead id="tableHeader">
+		    		<tr>
+		      			<th>Id</th>
+		      			<th>Name</th>
+		      			<th>Age</th>
+		      			<th>Address</th>
+		      			<th>Team</th>
+		    		</tr>
+		  		</thead>
+		  		<tbody>
+		  		</tbody>
+			</table>
+		</div>
+	</div>
 <!--
 	<div>
 		<ul>
