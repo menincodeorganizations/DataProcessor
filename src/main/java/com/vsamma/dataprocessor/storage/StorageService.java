@@ -14,9 +14,9 @@ public interface StorageService {
 
     void init();
 
-    void store(MultipartFile file);
+    String store(MultipartFile file);
     
-    void storeContentsToDb(MultipartFile file);
+    void storeContentsToDb(String fileName);
     
     public PersonDTO createPerson(Long id, String name, Integer age, String address, String team);
 

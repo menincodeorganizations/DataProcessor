@@ -1,6 +1,10 @@
+var stompClient = null;
+
 $(document).ready(function() {
-	var latestPeople = {}
-	var selectedPerson = {}
+	var latestPeople = {};
+	var selectedPerson = {};
+	var uploadedFileId = "";
+	
 
     $("#upload-form").submit(function (event) {
         //stop submit the form, we will post it manually.
@@ -67,12 +71,18 @@ function upload(form_data) {
         processData: false,
         timeout: 600000,
         success: function (data) {
+        	uploadedFileId = data.fileId;
+        	console.log("FileId: " + uploadedFileId);
+        	
             var json = "<h4>Response message</h4><hr/><pre>"
-                + JSON.stringify(data, null, 4) + "</pre>";
+                + JSON.stringify(data.message, null, 4) + "</pre>";
             $('#feedback').html(json.replace(/\"/g, ""));
 
             console.log("SUCCESS : ", data);
             $("#uploadField").prop("disabled", false);
+            
+            //Connect to websocket for additional messages
+            connect(uploadedFileId);
         },
         error: function (e) {
             var json = "<h4>Response message</h4><hr/><pre>"
@@ -83,6 +93,41 @@ function upload(form_data) {
             $("#uploadField").prop("disabled", false);
         }
     });
+}
+
+function connect(fileId) {
+	console.log("start connecting");
+    var socket = new SockJS('/dataprocessor');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+    	//After connection is made, send back the file ID to start processing.
+    	sendFileId(uploadedFileId);
+        stompClient.subscribe('/topic/import', function (message) {
+        	//If server sends filename back, then it's the last message and connection should be closed.
+        	if(message.body===uploadedFileId){
+        		disconnect();
+        	} else {
+        		showMessage(message.body);
+        	}
+        });
+    });
+}
+
+function disconnect() {
+    if (stompClient != null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected");
+}
+
+function sendFileId(fileId) {
+	stompClient.send("/app/import", {}, fileId);
+}
+
+function showMessage(message) {
+    var json = "<h4>Response message</h4><hr/><pre>"
+        + JSON.stringify(message, null, 4) + "</pre>";
+    $('#feedback').html(json.replace(/\"/g, ""));
 }
 
 //This function is not necessary because results are queried with autocomplete, not form submit

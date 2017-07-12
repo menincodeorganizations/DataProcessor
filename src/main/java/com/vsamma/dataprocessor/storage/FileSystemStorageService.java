@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import com.vsamma.dataprocessor.dto.PersonDTO;
 import com.vsamma.dataprocessor.model.Person;
 import com.vsamma.dataprocessor.repository.PersonRepository;
+import com.vsamma.dataprocessor.service.MessageService;
 
 import java.io.Reader;
 import java.io.FileNotFoundException;
@@ -31,13 +32,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import java.security.SecureRandom;
+import java.math.BigInteger;
+
 @Service
 public class FileSystemStorageService implements StorageService {
 	
 	private final Path rootLocation;
 	
+	private SecureRandom random = new SecureRandom();
+	
     @Autowired
     PersonRepository personRepository;
+    
+    @Autowired
+    MessageService msgService;
     
     @Autowired
     ModelMapper modelMapper;
@@ -48,29 +57,41 @@ public class FileSystemStorageService implements StorageService {
         this.modelMapper = new ModelMapper();
     }
 	
+	public String nextFileId() {
+        return new BigInteger(130, random).toString(32) + ".csv";
+    }
+	
 	@Override
-    public void store(MultipartFile file) {
+    public String store(MultipartFile file) {
         try {
+        	String newFileName = nextFileId();
+        	
             if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
-            
-            //Insert file data to DB
-            this.storeContentsToDb(file);
+
+            if (!file.getOriginalFilename().endsWith(".csv")) {
+                throw new StorageException("Failed to store file " + file.getOriginalFilename() + " because it is not CSV.");
+            }
+            Files.copy(file.getInputStream(), this.rootLocation.resolve(newFileName));
+
+            return newFileName;
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
         }
     }
 	
 	@Override
-	public void storeContentsToDb(MultipartFile file){
+	public void storeContentsToDb(String fileName){
 		//empty file check was in "store" function
 		FileInputStream fis = null;
 		
         try {
         	//Get imported file path
-            String filePath = this.rootLocation + "/" + file.getOriginalFilename();
+        	msgService.sendMessage("Reading CSV records...");
+        	Thread.sleep(500);
+        	
+            String filePath = this.rootLocation + "/" + fileName;
             //Create a new FileReader
             Reader in = new FileReader(filePath);
             //Parse file lines to CSV records
@@ -78,17 +99,22 @@ public class FileSystemStorageService implements StorageService {
             //Create an empty list for entities
             List<Person> personList = new ArrayList<>();
 
+            msgService.sendMessage("Processing CSV records...");
+            Thread.sleep(500);
             for (CSVRecord record : records) {
             	personList.add(Person.of(Long.valueOf(record.get(0)), record.get(1), Integer.valueOf(record.get(2)), record.get(3), record.get(4)));
             }
             
             //Bulk insert persons' data to DB
+            msgService.sendMessage("Importing CSV data to the database...");
             personRepository.bulkPersist(personList);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+        } catch (InterruptedException ex) {
+        	Logger.getLogger(FileSystemStorageService.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
             try {
                 if (fis != null) {
                     fis.close();

@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.vsamma.dataprocessor.model.FileUploadResponseBody;
 import com.vsamma.dataprocessor.storage.StorageFileNotFoundException;
 import com.vsamma.dataprocessor.storage.StorageService;
 
@@ -48,14 +49,17 @@ public class FileUploadController {
 	public ResponseEntity<Resource> handleFileUpload(@RequestParam("file") MultipartFile file,
             RedirectAttributes redirectAttributes) {
 
-        storageService.store(file);
+        String newFileName = storageService.store(file);
         System.out.println(file);
         System.out.println(file.getOriginalFilename());
-        Resource fileResponse = storageService.loadAsResource(file.getOriginalFilename());
+//        Resource fileResponse = storageService.loadAsResource(file.getOriginalFilename());
 
-        return new ResponseEntity("Successfully uploaded - " +
-        		file.getOriginalFilename(), new HttpHeaders(), HttpStatus.OK);
+        FileUploadResponseBody furb = new FileUploadResponseBody();
+        furb.setMessage("Successfully uploaded: " +
+        		file.getOriginalFilename());
+        furb.setFileId(newFileName);
         
+        return new ResponseEntity(furb, new HttpHeaders(), HttpStatus.OK);
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)
