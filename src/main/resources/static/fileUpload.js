@@ -1,9 +1,10 @@
 var stompClient = null;
+var latestPeople = {};
+var selectedPerson = {};
+var uploadedFileId = "";
 
 $(document).ready(function() {
-	var latestPeople = {};
-	var selectedPerson = {};
-	var uploadedFileId = "";
+
 	
 
     $("#upload-form").submit(function (event) {
@@ -14,6 +15,37 @@ $(document).ready(function() {
 		form_data.append( "file", $("input[name=uploadField]")[0].files[0]);
 
 		upload(form_data);
+    });
+    
+    $("#searchField2").change(function(){
+        var search = {}
+        search["query"] = $("#searchField2").val();
+        if(search["query"]){
+	        $.ajax({
+				type: "POST",
+				url: "/search",
+				dataType: "json",
+				contentType: "application/json",
+				data: JSON.stringify(search),
+				success: function(data) {
+					latestPeople = data.results;
+		    		
+					$("#personData").hide();
+		    		$("#resultData").show();
+		    		for (var i = 0; i < latestPeople.length; i++) {
+		    			var htmlString = "<tr id='result-"+i+"'><td><a href='javascript:void(0);' onclick='showPersonDetails("+latestPeople[i].id+");return false'>" + latestPeople[i].name + "</a></td></tr>";
+		    			if(i<1){
+		    				$("#resultData tbody").html(htmlString);
+		    			} else {
+		    				$("#resultData tbody").append(htmlString);
+		    			}
+		    				
+		    		}
+		    		
+					
+				}
+			});
+        }
     });
     
     $("#searchField").autocomplete({
@@ -40,11 +72,12 @@ $(document).ready(function() {
     	},
     	select: function(event, ui){
     		for (var i = 0; i < latestPeople.length; i++) {
-                if(latestPeople[i].id == ui.item.id){
+                if(latestPeople[i].id === ui.item.id){
                 	selectedPerson = latestPeople[i] 
                 }
             }
     		$("#personData tbody").append("<tr><td>" + selectedPerson.id + "</td><td>" + selectedPerson.name + "</td><td>" + selectedPerson.age + "</td><td>" + selectedPerson.address + "</td><td>" + selectedPerson.team + "</td></tr>");
+    		$("#resultData").hide();
     		$("#personData").show();
     	},
     	minLength: 1
@@ -58,6 +91,17 @@ $(document).ready(function() {
         //search();
     });
 });
+
+function showPersonDetails(personId) {
+	var person = {}
+	for (var i = 0; i < latestPeople.length; i++) {
+        if(latestPeople[i].id === personId){
+        	person = latestPeople[i] 
+        }
+    }
+	$("#personData").show();
+	$("#personData tbody").append("<tr><td>" + person.id + "</td><td>" + person.name + "</td><td>" + person.age + "</td><td>" + person.address + "</td><td>" + person.team + "</td></tr>");
+}
 
 function upload(form_data) {
     $("#uploadField").prop("disabled", true);
